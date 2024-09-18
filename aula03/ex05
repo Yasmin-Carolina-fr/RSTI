@@ -1,0 +1,12 @@
+let array = [1, 2, 3];
+
+const substituir = (array, valor, posicao) => {
+  if (posicao > array.length) {
+    console.log('Erro');
+    return;
+  }
+  array[posicao] = valor;
+  console.log(array);
+};
+
+substituir(array, 10, 3);
