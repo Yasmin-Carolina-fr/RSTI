@@ -1,8 +1,0 @@
-let array = [1, 2, 3];
-
-const adicionar = (array, valor, posicao) => {
-  array.splice(posicao, 0, valor);
-  console.log(array);
-};
-
-adicionar(array, 10, 3);

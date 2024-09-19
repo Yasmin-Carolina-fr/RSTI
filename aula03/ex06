@@ -1,9 +1,0 @@
-let array = [1, 2, 3];
-
-const manipulacaoArray = (valor1, valor2) => {
-  //a cada numero que quiser adicionar é preciso informar(ex:valor1,valor2...assim por diante)
-  array.push(valor1, valor2);
-  console.log(array);
-};
-
-manipulacaoArray(4, 5);

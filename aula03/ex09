@@ -1,7 +1,0 @@
-let array = [1, 2, 3, 4];
-function troca(array, indice, novoIndice) {
-  const [elemento] = array.splice(indice, 1);
-  array.splice(novoIndice, 0, elemento);
-  console.log(array);
-}
-troca(array, 0, 5);

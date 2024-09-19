@@ -1,7 +1,0 @@
-let array = [2, 3, 4];
-const adicionarInicio = (valor) => {
-  array.unshift(valor);
-  console.log(array);
-};
-
-adicionarInicio(1);

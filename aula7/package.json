@@ -1,0 +1,14 @@
+{
+  "name": "aula07",
+  "version": "1.0.0",
+  "description": "aula07",
+  "main": "index.js",
+  "scripts": {
+    "test": "comit"
+  },
+  "author": "Yasmin",
+  "license": "MIT",
+  "dependencies": {
+    "inquirer": "^11.0.2"
+  }
+}
