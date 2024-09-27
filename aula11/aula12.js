@@ -1,287 +1,90 @@
-import fs from 'node:fs/promises';
-import { select, input, checkbox } from '@inquirer/prompts';
-
-const file = 'goals.json';
-
-let goals;
-
-let message = 'Bem vindo ao seu controle de metas!';
-
-const fetchGoals = async () => {
-  try {
-    const data = await fs.readFile(file, 'utf-8'); // leitura do arquivo
-    goals = JSON.parse(data);
-  } catch (error) {
-    goals = [];
+/*class ContaBancaria{
+  constructor(conta, nome, saldo) {
+    this.conta = conta;
+    this.nome = nome;
+    this.saldo = saldo;
   }
-};
-
-const saveGoals = async () => {
-  await fs.writeFile(file, JSON.stringify(goals, null, 2));
-};
-
-const registerGoal = async () => {
-  const goal = await input({
-    message: 'Digite a sua meta: '
-  });
-
-  if (goal.length == 0) {
-    message = 'A meta não pode ser vazia!';
-    return;
+  mostrarNome() {
+    console.log(`O nome do titular da conta é ${this.nome}`);
   }
 
-  goals.push({ value: goal, checked: false });
-
-  message = 'Meta cadastrada com sucesso!';
-};
-
-const listGoals = async () => {
-  if (goals.length == 0) {
-    message = 'Não existem metas cadastradas!';
-    return;
+  mostrarConta() {
+    console.log(`O número da conta é ${this.conta}`);
   }
 
-  // armazena as metas marcadas como concluídas
-  const checkedGoals = await checkbox({
-    message:
-      'Use as setas para mudar de meta, o espaço para marcar/desmarcar a meta e o enter para finalizar.',
-    choices: [...goals],
-    instructions: false // remover as instruções em inglês
-  });
-
-  // garantir que as metas iniciem como desmarcadas
-  goals.forEach((goal) => {
-    goal.checked = false;
-  });
-
-  if (checkedGoals == 0) {
-    message = 'Nenhuma meta foi selecionada!';
-    return;
+  mostrarSaldo() {
+    console.log(`O saldo da conta é R$${this.saldo.toFixed(2)}`);
   }
-
-  // para cada meta selecionada, marca como concluída
-  checkedGoals.forEach((checkedGoal) => {
-    const goal = goals.find((selectedGoal) => {
-      return selectedGoal.value == checkedGoal;
-    });
-
-    goal.checked = true;
-  });
-
-  message = 'Meta(s) marcada(s) como concluída(s)!';
-};
-
-const listCompletedGoals = async () => {
-  const completedGoals = goals.filter((goal) => {
-    return goal.checked;
-  });
-
-  if (completedGoals.length == 0) {
-    message = 'Não existem metas concluídas.';
-    return;
-  }
-
-  completedGoals.forEach((completedGoal) => {
-    console.log(completedGoal.value);
-  });
-};
-
-const listIncompletedGoals = async () => {
-  const incompletedGoals = goals.filter((goal) => {
-    return !goal.checked;
-  });
-
-  if (incompletedGoals.length == 0) {
-    message = 'Todas as metas foram concluídas!';
-    return;
-  }
-
-  incompletedGoals.forEach((incompletedGoal) => {
-    console.log(incompletedGoal.value);
-  });
-};
-
-/* const listCompletedGoalsAlternative = async () => {
-  const completedGoals = goals.filter((goal) => goal.checked)
-  console.log(`Você completou ${completedGoals.length}/${goals.length} metas.`)
-  return
-}*/
-
-const porcentualCompletedGoals = async () => {
-  const completedGoals = goals.filter((goal) => goal.checked);
-
-  const parcial = `${completedGoals.length}/${goals.length}`;
-
-  const percentage = (completedGoals.length / goals.length) * 100;
-
-  console.log(`Você completou ${percentage.toFixed(2)}% das metas.`);
-  console.log(`Você completou ${completedGoals.length}/${goals.length} metas.`);
-
-  return {
-    parcial: `${completedGoals.length}/${goals.length}`,
-    porcentagem: percentage.toFixed(2)
-  };
-};
-
-const deleteGoals = async () => {
-  /* Informa o usuário caso não existam metas cadastradas */
-  if (goals.length == 0) {
-    message = 'Não existem metas cadastradas!';
-    return;
-  }
-
-  /* cada meta é transformada em um objeto */
-  const uncheckedGoals = goals.map((goal) => {
-    return { value: goal.value, checked: false };
-  });
-
-  /* exibir o checkbox permitindo que as metas sejam selecionadas */
-  const goalsToDelete = await checkbox({
-    message: 'Selecione as metas que deseja deletar:',
-    choices: [...uncheckedGoals],
-    instructions: false
-  });
-
-  /* se nenhuma meta for selecioanda, informa ao usuário */
-  if (goalsToDelete.length == 0) {
-    message = 'Nenhuma meta foi selecionada!';
-    return;
-  }
-
-  /* filtra o array e cria um novo array com as metas não marcadas */
-  goalsToDelete.forEach((item) => {
-    goals = goals.filter((goal) => {
-      console.log(`Diferente: ${goal.value != item}`);
-      return goal.value != item;
-    });
-  });
-
-  message = 'Meta(s) deletada(s) com sucesso!';
-};
-
-const updateGoals = async () => {
-  if (goals.length == 0) {
-    message = 'Não existem metas cadastradas!';
-    return;
-  }
-
-  const uncheckedGoals = goals.map((goal) => {
-    return { value: goal.value, checked: false };
-  });
-
-  const goalsToUpdate = await checkbox({
-    message: 'Selecione a(s) meta(s) que deseja atualizar: ',
-    choices: [...uncheckedGoals],
-    instructions: false
-  });
-
-  if (goalsToUpdate.length == 0) {
-    message = 'Nenhuma meta foi selecionada!';
-    return;
-  }
-
-  for (const oldGoal of goalsToUpdate) {
-    // solicitar o novo nome para a meta selecionada
-    const newGoal = await input({
-      message: `Digite o novo nome para a meta ${oldGoal}: `
-    });
-
-    if (newGoal.length == 0) {
-      message = 'O novo nome da meta não pode ser vazio!';
-      return;
-    }
-
-    const goalIndex = goals.findIndex((goal) => goal.value === oldGoal);
-
-    if (goalIndex !== -1) {
-      goals[goalIndex].value = newGoal;
+  deposito(valor) {
+    if (valor > 0) {
+      this.saldo += valor;
+      console.log(`Depósito de R$${valor.toFixed(2)} realizado com sucesso!`);
+    } else {
+      console.log('O valor do depósito deve ser positivo!');
     }
   }
 
-  message = 'Meta(s) atualizada(s) com sucesso!';
-};
-
-const showMessage = () => {
-  if (message != '') {
-    console.log(message);
-    console.log('');
-    message = '';
-  }
-};
-
-const start = async () => {
-  await fetchGoals();
-
-  while (true) {
-    showMessage();
-    await saveGoals();
-
-    const option = await select({
-      message: 'Menu > ',
-      choices: [
-        {
-          name: 'Cadastrar meta',
-          value: 'register'
-        },
-        {
-          name: 'Listar meta(s)',
-          value: 'list'
-        },
-        {
-          name: 'Listar meta(s) realizada(s)',
-          value: 'completed'
-        },
-        {
-          name: 'Listar meta(s) conclúidas(s) (detalhado)',
-          value: 'porcentualAlternative'
-        },
-        {
-          name: 'Listar meta(s) não realizada(s)',
-          value: 'incompleted'
-        },
-        {
-          name: 'Atualizar meta(s)',
-          value: 'update'
-        },
-        {
-          name: 'Deletar meta(s)',
-          value: 'delete'
-        },
-        {
-          name: 'Sair',
-          value: 'out'
-        }
-      ]
-    });
-
-    switch (option) {
-      case 'register':
-        await registerGoal();
-        console.log(goals);
-        break;
-      case 'list':
-        await listGoals();
-        break;
-      case 'completed':
-        await listCompletedGoals();
-        break;
-      case 'incompleted':
-        await listIncompletedGoals();
-        break;
-      case 'porcentualAlternative':
-        await porcentualCompletedGoals();
-        break;
-      case 'update':
-        await updateGoals();
-        break;
-      case 'delete':
-        await deleteGoals();
-        break;
-      case 'out':
-        console.log('Até a próxima!');
-        return;
+  saque(valor) {
+    if (valor > 0 && valor <= this.saldo) {
+      this.saldo -= valor;
+      console.log(`Saque de R$${valor.toFixed(2)} realizado com sucesso!`);
+    } else if (valor > this.saldo) {
+      console.log('Saldo insuficiente para saque!');
+    } else {
+      console.log('O valor do saque deve ser positivo!');
     }
   }
-};
 
-start();
+  mostrarInfo() {
+    this.mostrarNome();
+    this.mostrarConta();
+    this.mostrarSaldo();
+  }
+}
+function criarConta() {
+  const conta1 = prompt('Digite o número da conta:');
+  const nome = prompt('Digite o nome do titular:');
+  const saldoInicial = parseFloat(prompt('Digite o saldo inicial:'));
+
+  return new ContaBancaria(123456, carol, 1000);
+}
+const conta1 = criarConta();
+conta1.mostrarInfo();
+conta1.deposito(500);
+conta1.mostrarInfo();
+conta1.saque(200);
+conta1.mostrarInfo();
+conta1.saque(1500);*/
+
+/*class Alunos {
+  constructor(nome, matricula, notas) {
+    this.nome = nome;
+    this.matricula = matricula;
+    this.notas = notas;
+  }
+
+  mostrarNome() {
+    console.log('O nome do aluno é: ' + this.nome);
+  }
+
+  mostrarMatricula() {
+    console.log('O número da matrícula é: ' + this.matricula);
+  }
+
+  calcularMedia() {
+    const total = this.notas.reduce((acc, nota) => acc + nota, 0);
+    const media = total / this.notas.length;
+    console.log('A média das notas é: ' + media);
+    if (media < 6) {
+      console.log('Desempenho: Bom');
+    } else {
+      console.log('Desempenho: Ótimo');
+    }
+    return media;
+  }
+}
+
+const aluno = new Alunos('yasmin', '123456', [7, 8, 5, 6]);
+aluno.mostrarNome();
+aluno.mostrarMatricula();
+aluno.calcularMedia();*/
